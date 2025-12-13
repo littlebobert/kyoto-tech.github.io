@@ -22,6 +22,7 @@ async function fetchMeetupEvents() {
 	const now = new Date();
 	const cutoff = new Date();
 	cutoff.setDate(cutoff.getDate() + 60);
+	const IN_PROGRESS_GRACE_MS = 4 * 60 * 60 * 1000; // keep events visible for a short window after start when no endTime
 
 	const resolvePhotoUrl = (photoLike: any) => {
 		const ref =
@@ -60,10 +61,44 @@ async function fetchMeetupEvents() {
 		};
 	};
 
+	const resolveSocialProofInsights = (socialProofLike: any) => {
+		const ref =
+			(typeof socialProofLike === "string" &&
+				socialProofLike.startsWith("SocialProofInsights:"))
+				? socialProofLike
+				: socialProofLike?.__ref ??
+				  (socialProofLike?.id ? `SocialProofInsights:${socialProofLike.id}` : null);
+
+		const socialProof = ref ? apolloState[ref] : socialProofLike;
+		if (!socialProof) return null;
+
+		return {
+			interested: socialProof.totalInterestedUsers ?? socialProof.totalInterested ?? null,
+			going: socialProof.totalGoingUsers ?? socialProof.totalGoing ?? null
+		};
+	};
+
+	const resolveGoingCount = (goingLike: any) => {
+		if (!goingLike) return null;
+		if (typeof goingLike.totalCount === "number") return goingLike.totalCount;
+
+		if (typeof goingLike.__ref === "string") {
+			const resolved = apolloState[goingLike.__ref];
+			if (resolved && typeof resolved.totalCount === "number") {
+				return resolved.totalCount;
+			}
+		}
+
+		return null;
+	};
+
 	const events = Object.entries(apolloState)
 		.filter(([key, value]) => key.startsWith("Event:") && (value as any)?.dateTime)
 		.map(([, rawValue]) => {
 			const value = rawValue as any;
+			const socialProof = resolveSocialProofInsights(value.socialProofInsights);
+			const goingCount =
+				resolveGoingCount(value.going) ?? socialProof?.going ?? 0;
 			return {
 				title: value.title?.replace(" | Kyoto Tech Meetup", "") ?? value.title,
 				link: value.eventUrl,
@@ -71,14 +106,19 @@ async function fetchMeetupEvents() {
 				endTime: value.endTime ?? null,
 				description: value.description ?? "",
 				image: resolvePhotoUrl(value.featuredEventPhoto),
-				goingCount: value.going?.totalCount ?? 0,
-				interestedCount: value.socialProofInsights?.totalInterestedUsers ?? 0,
+				goingCount,
+				interestedCount: socialProof?.interested ?? 0,
 				venue: resolveVenue(value.venue)
 			};
 		})
 		.filter((evt) => {
 			const start = new Date(evt.start);
-			return start >= now && start <= cutoff;
+			const end = evt.endTime ? new Date(evt.endTime) : null;
+			const upcoming = start >= now;
+			const inProgress = end
+				? start <= now && end >= now
+				: start <= now && now.valueOf() - start.valueOf() <= IN_PROGRESS_GRACE_MS;
+			return (upcoming || inProgress) && start <= cutoff;
 		})
 		.sort((a, b) => new Date(a.start).valueOf() - new Date(b.start).valueOf());
 
