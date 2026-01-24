@@ -10,6 +10,7 @@ import { useTranslations } from "../i18n/utils";
 import LanguagePicker from "../components/LanguagePicker.astro";
 import memberFeeds from "../data/member-feeds.json";
 import compositeFeed from "../data/composite-feed.json";
+import eventLocations from "../data/event-locations.json";
 
 const { lang = "en" } = Astro.props;
 const t = useTranslations(lang);
@@ -513,17 +514,40 @@ const nextUpdate = compositeFeed?.generatedAt
             </p>
           </div>
           <div
-            class="rounded-2xl bg-white/90 p-6 shadow-lg shadow-stone-900/10 ring-1 ring-white/70"
+            class="rounded-2xl bg-white/90 shadow-lg shadow-stone-900/10 ring-1 ring-white/70 overflow-hidden"
           >
-            <h3 class="text-xl font-semibold text-slate-900">
-              {t("home.locations.title")}
-            </h3>
-            <p class="mt-3 text-base leading-relaxed text-slate-600">
-              {t("home.locations.description1")}
-            </p>
-            <p class="mt-2 text-base leading-relaxed text-slate-600">
-              {t("home.locations.description2")}
-            </p>
+            <div class="p-6">
+              <h3 class="text-xl font-semibold text-slate-900">
+                {t("home.locations.title")}
+              </h3>
+              <p class="mt-3 text-base leading-relaxed text-slate-600">
+                {t("home.locations.description1")}
+              </p>
+              <p class="mt-2 text-base leading-relaxed text-slate-600">
+                {t("home.locations.description2")}
+              </p>
+              <p class="mt-2 text-base leading-relaxed text-slate-600">
+                {t("home.locations.description3")}
+              </p>
+            </div>
+            <div class="flex flex-col gap-4 px-6 pb-6 pt-2 sm:flex-row">
+              {eventLocations.map((location) => (
+                <div class="aspect-square flex-1 overflow-hidden rounded-2xl bg-white/90 shadow-lg shadow-stone-900/10 ring-1 ring-white/70">
+                  <iframe
+                    src={location.embedUrl}
+                    title={`Map of ${location.name}`}
+                    aria-label={`Embedded map showing the location of ${location.name}`}
+                    width="100%"
+                    height="100%"
+                    style="border:0; display: block;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                  >
+                  </iframe>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
