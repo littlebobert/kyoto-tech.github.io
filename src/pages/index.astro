@@ -1,6 +1,7 @@
 ---
 /* eslint-disable max-lines */
 import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
 import Hero from "../components/Hero.astro";
 import WhyJoin from "../components/WhyJoin.astro";
 import WhatWeDo from "../components/WhatWeDo.astro";
@@ -197,11 +198,16 @@ const nextUpdate = compositeFeed?.generatedAt
 ---
 
 <Layout>
-  <Hero
-    tagline={t("home.header.tagline")}
-    title={t("home.header.title")}
-    subtitle={t("home.header.subtitle")}
-  />
+  <Header lang={lang} />
+
+  <div class="mx-auto max-w-6xl pt-20">
+    <Hero
+      title={t("home.header.title")}
+      subtitle={t("home.header.subtitle")}
+      ctaUrl={meetupUrl}
+      ctaLabel={t("home.header.cta")}
+    />
+  </div>
 
   <main id="main-content" class="space-y-0">
     <section id="quick-links" class="bg-white/90 px-6 py-12 md:px-12">

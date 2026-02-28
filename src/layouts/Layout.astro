@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import { useTranslations } from "../i18n/utils";
 import { getRelativeLocaleUrl } from "astro:i18n";
+import { ClientRouter } from "astro:transitions";
 
 const activeLang = (Astro.currentLocale ?? "en") as "en" | "ja";
 const t = useTranslations(activeLang);
@@ -181,6 +182,7 @@ const ldData = {
 		<link rel="canonical" href={canonicalUrl} />
 		<script type="application/ld+json" is:inline set:html={JSON.stringify(ldData)}></script>
 		<title>{t("meta.title")}</title>
+		<ClientRouter />
 	</head>
 	<body>
 
@@ -198,5 +200,6 @@ const ldData = {
 
 		<a class="skip-link" href="#main-content">{t("a11y.skipToMain")}</a>
 		<slot />
+		<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
 	</body>
 </html>
