@@ -51,6 +51,37 @@ const quickLinks = [
   },
 ] as const;
 
+const photoGroups = [
+  {
+    title: "Community Hack Days",
+    photos: [
+      {
+        src: "/images/kyoto-tech-meetup-hack-day.jpg",
+        alt: "Our first Community Hack Day where we built this very site!",
+        caption: "Our first Community Hack Day where we built this very site!",
+        repoUrl: "https://github.com/kyoto-tech/kyoto-tech.github.io",
+      },
+      {
+        src: "/images/kyoto-tech-meetup-hack-day_2.jpg",
+        alt: "Our second Community Hack Day",
+        caption: "Our second Community Hack Day",
+        repoUrl: null,
+      },
+    ],
+  },
+  {
+    title: "Morning Tech & Coffee",
+    photos: [
+      {
+        src: "/images/kyoto-tech-morning-tech-&-coffee.jpg",
+        alt: "Morning Tech & Coffee meetup",
+        caption: "Morning Tech & Coffee",
+        repoUrl: null,
+      },
+    ],
+  },
+] as const;
+
 type ActivityContent =
   | {
       type: "paragraph";
@@ -429,29 +460,39 @@ const nextUpdate = compositeFeed?.generatedAt
           {t("home.whyJoin.title")}
         </h2>
         <WhyJoin items={benefits} />
-        <figure
-          class="mx-auto mt-10 w-full max-w-3xl overflow-hidden rounded-3xl bg-white/90 shadow-xl shadow-stone-900/5 ring-1 ring-white/60"
-        >
-          <img
-            src="/images/kyoto-tech-meetup-hack-day.jpg"
-            alt="Our first Community Hack Day where we built this very site!"
-            loading="lazy"
-            decoding="async"
-            class="h-full w-full max-h-[520px] object-cover"
-          />
-          <figcaption
-            class="px-5 py-4 text-center text-sm font-medium text-slate-700"
-          >
-            Our first Community Hack Day where we built this very site! (<a
-              class="text-(--accent) underline-offset-4 hover:underline"
-              href="https://github.com/kyoto-tech/kyoto-tech.github.io"
-              target="_blank"
-              rel="noreferrer"
-            >
-              repo here
-            </a>)
-          </figcaption>
-        </figure>
+        {photoGroups.map((group) => (
+          <div class="mt-10">
+            <h3 class="mb-4 text-base font-semibold uppercase tracking-widest text-slate-500">
+              {group.title}
+            </h3>
+            <div class={`flex flex-col gap-4 sm:flex-row ${group.photos.length === 1 ? "sm:justify-center" : ""}`}>
+              {group.photos.map((photo) => (
+                <figure class={`overflow-hidden rounded-3xl bg-white/90 shadow-xl shadow-stone-900/5 ring-1 ring-white/60 ${group.photos.length === 1 ? "w-full sm:w-80" : "flex-1"}`}>
+                  <img
+                    src={photo.src}
+                    alt={photo.alt}
+                    loading="lazy"
+                    decoding="async"
+                    class={`h-full w-full object-cover ${group.photos.length === 1 ? "max-h-[420px]" : "max-h-[280px]"}`}
+                  />
+                  <figcaption class="px-5 py-4 text-center text-sm font-medium text-slate-700">
+                    {photo.caption}
+                    {photo.repoUrl && (
+                      <> <br />(<a
+                        class="text-(--accent) underline-offset-4 hover:underline"
+                        href={photo.repoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        repo here
+                      </a>)</>
+                    )}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </section>
 
