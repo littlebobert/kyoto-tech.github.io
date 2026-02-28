@@ -15,6 +15,7 @@ const allLangs = Object.entries(languages) as [keyof typeof languages, string][]
 		return (
 			<a
 				href={getRelativeLocaleUrl(lang, "/")}
+				data-language={lang}
 				class:list={[
 					"rounded-full px-3 py-1 text-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700",
 					isActive
@@ -30,3 +31,21 @@ const allLangs = Object.entries(languages) as [keyof typeof languages, string][]
 		);
 	})}
 </div>
+
+<script is:inline>
+	const LANGUAGE_STORAGE_KEY = "kyoto-tech-language";
+	const languageLinks = document.querySelectorAll("a[data-language]");
+
+	languageLinks.forEach((link) => {
+		link.addEventListener("click", () => {
+			const selectedLanguage = link.getAttribute("data-language");
+			if (selectedLanguage !== "en" && selectedLanguage !== "ja") return;
+
+			try {
+				localStorage.setItem(LANGUAGE_STORAGE_KEY, selectedLanguage);
+			} catch {
+				// Ignore if storage is unavailable.
+			}
+		});
+	});
+</script>
