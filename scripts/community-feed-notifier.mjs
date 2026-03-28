@@ -27,6 +27,7 @@ function parseArgs(argv) {
     dryRun: false,
     maxDeliveries: null,
     maxItemsPerFeed: DEFAULT_MAX_ITEMS_PER_FEED,
+    newestFirst: false,
     skipStateWrite: false,
     suppressRemainingAfterLimit: false,
   };
@@ -44,6 +45,8 @@ function parseArgs(argv) {
     } else if (arg === "--max-items-per-feed" && argv[i + 1]) {
       args.maxItemsPerFeed = Number(argv[i + 1]);
       i += 1;
+    } else if (arg === "--newest-first") {
+      args.newestFirst = true;
     } else if (arg === "--skip-state-write") {
       args.skipStateWrite = true;
     } else if (arg === "--suppress-remaining-after-limit") {
@@ -548,7 +551,10 @@ async function main() {
   const state = gistId ? await readStateFromGist(gistId, gistToken) : defaultState();
   const now = new Date().toISOString();
   const sortedItems = allItems.sort(
-    (a, b) => new Date(a.publishedAt).valueOf() - new Date(b.publishedAt).valueOf(),
+    (a, b) =>
+      args.newestFirst
+        ? new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf()
+        : new Date(a.publishedAt).valueOf() - new Date(b.publishedAt).valueOf(),
   );
   const isFirstRun = Object.keys(state.items).length === 0;
 
