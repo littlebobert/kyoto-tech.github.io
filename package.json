@@ -8,6 +8,8 @@
     "build": "npm run feeds:pull:stale-ok && astro build",
     "check": "npm run lint; npm run tsc; npm run astrocheck; npm run images:check; npm run knip",
     "dev": "astro dev",
+    "feeds:notify": "node scripts/community-feed-notifier.mjs",
+    "feeds:notify:dry-run": "node scripts/community-feed-notifier.mjs --dry-run",
     "feeds:pull": "node scripts/fetch-feeds.mjs",
     "feeds:pull:stale-ok": "node scripts/fetch-feeds.mjs --stale-ok",
     "images:optimize": "node scripts/optimize-images.mjs",
