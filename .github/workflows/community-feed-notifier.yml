@@ -10,6 +10,11 @@ on:
         required: false
         type: boolean
         default: false
+      skip_state_write:
+        description: "Do not update gist state during this run"
+        required: false
+        type: boolean
+        default: false
       dry_run:
         description: "Check feeds without posting or updating gist state"
         required: false
@@ -55,12 +60,16 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           COMMUNITY_FEED_GENERIC_WEBHOOK_URL: ${{ secrets.COMMUNITY_FEED_GENERIC_WEBHOOK_URL }}
           WORKFLOW_DEMO_MODE: ${{ github.event.inputs.demo_mode || 'false' }}
+          WORKFLOW_SKIP_STATE_WRITE: ${{ github.event.inputs.skip_state_write || 'false' }}
           WORKFLOW_DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
           WORKFLOW_ALLOW_INITIAL_POSTS: ${{ github.event.inputs.allow_initial_posts || 'false' }}
         run: |
           args=()
           if [ "$WORKFLOW_DEMO_MODE" = "true" ]; then
             args+=("--max-deliveries" "3" "--suppress-remaining-after-limit")
+          fi
+          if [ "$WORKFLOW_SKIP_STATE_WRITE" = "true" ]; then
+            args+=("--skip-state-write")
           fi
           if [ "$WORKFLOW_DRY_RUN" = "true" ]; then
             args+=("--dry-run")

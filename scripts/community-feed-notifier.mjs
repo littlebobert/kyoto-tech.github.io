@@ -27,6 +27,7 @@ function parseArgs(argv) {
     dryRun: false,
     maxDeliveries: null,
     maxItemsPerFeed: DEFAULT_MAX_ITEMS_PER_FEED,
+    skipStateWrite: false,
     suppressRemainingAfterLimit: false,
   };
 
@@ -43,6 +44,8 @@ function parseArgs(argv) {
     } else if (arg === "--max-items-per-feed" && argv[i + 1]) {
       args.maxItemsPerFeed = Number(argv[i + 1]);
       i += 1;
+    } else if (arg === "--skip-state-write") {
+      args.skipStateWrite = true;
     } else if (arg === "--suppress-remaining-after-limit") {
       args.suppressRemainingAfterLimit = true;
     }
@@ -500,6 +503,7 @@ async function main() {
   const gistId = process.env.COMMUNITY_FEED_STATE_GIST_ID || "";
   const gistToken = process.env.GH_GIST_TOKEN || "";
   const destinations = getDestinations();
+  const shouldPersistState = !args.dryRun && !args.skipStateWrite;
 
   if (!destinations.length && !args.dryRun) {
     throw new Error(
@@ -507,7 +511,7 @@ async function main() {
     );
   }
 
-  if (!gistId && !args.dryRun) {
+  if (!gistId && shouldPersistState) {
     throw new Error("COMMUNITY_FEED_STATE_GIST_ID is required.");
   }
 
@@ -556,9 +560,10 @@ async function main() {
     state.initializedAt = state.initializedAt || now;
     state.updatedAt = now;
 
-    if (args.dryRun) {
+    if (args.dryRun || args.skipStateWrite) {
+      const modeLabel = args.dryRun ? "[dry-run] Would seed" : "State writes disabled; would seed";
       console.log(
-        `[notifier] [dry-run] Would seed ${sortedItems.length} item(s) without posting.`,
+        `[notifier] ${modeLabel} ${sortedItems.length} item(s) without posting.`,
       );
       return;
     }
@@ -591,7 +596,7 @@ async function main() {
         state.updatedAt = new Date().toISOString();
         stateChanged = true;
 
-        if (!args.dryRun) {
+        if (shouldPersistState) {
           await writeStateToGist(gistId, gistToken, state);
         }
       }
@@ -607,7 +612,7 @@ async function main() {
     state.updatedAt = new Date().toISOString();
     stateChanged = true;
 
-    if (!args.dryRun) {
+    if (shouldPersistState) {
       await writeStateToGist(gistId, gistToken, state);
     }
   }
@@ -622,6 +627,10 @@ async function main() {
     console.log("[notifier] No new community posts needed delivery.");
   } else {
     console.log(`[notifier] Sent ${newDeliveries} new delivery(s).`);
+  }
+
+  if (args.skipStateWrite && stateChanged) {
+    console.log("[notifier] State writes were skipped for this run.");
   }
 
   if (limitedItems) {
