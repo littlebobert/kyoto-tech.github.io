@@ -25,7 +25,9 @@ function parseArgs(argv) {
   const args = {
     allowInitialPosts: false,
     dryRun: false,
+    maxDeliveries: null,
     maxItemsPerFeed: DEFAULT_MAX_ITEMS_PER_FEED,
+    suppressRemainingAfterLimit: false,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -35,9 +37,14 @@ function parseArgs(argv) {
       args.allowInitialPosts = true;
     } else if (arg === "--dry-run") {
       args.dryRun = true;
+    } else if (arg === "--max-deliveries" && argv[i + 1]) {
+      args.maxDeliveries = Number(argv[i + 1]);
+      i += 1;
     } else if (arg === "--max-items-per-feed" && argv[i + 1]) {
       args.maxItemsPerFeed = Number(argv[i + 1]);
       i += 1;
+    } else if (arg === "--suppress-remaining-after-limit") {
+      args.suppressRemainingAfterLimit = true;
     }
   }
 
@@ -565,6 +572,8 @@ async function main() {
 
   let newDeliveries = 0;
   const deliveryFailures = [];
+  let limitedItems = 0;
+  let processedItems = 0;
   let stateChanged = false;
 
   for (const item of sortedItems) {
@@ -573,6 +582,24 @@ async function main() {
     if (record.suppressed) continue;
     if (!hasPendingDestinations(record, destinations)) continue;
 
+    if (args.maxDeliveries !== null && processedItems >= args.maxDeliveries) {
+      limitedItems += 1;
+
+      if (args.suppressRemainingAfterLimit) {
+        record.suppressed = true;
+        state.initializedAt = state.initializedAt || now;
+        state.updatedAt = new Date().toISOString();
+        stateChanged = true;
+
+        if (!args.dryRun) {
+          await writeStateToGist(gistId, gistToken, state);
+        }
+      }
+
+      continue;
+    }
+
+    processedItems += 1;
     const result = await deliverItem(item, record, destinations, args.dryRun);
     newDeliveries += result.newDeliveries;
     deliveryFailures.push(...result.failures);
@@ -595,6 +622,17 @@ async function main() {
     console.log("[notifier] No new community posts needed delivery.");
   } else {
     console.log(`[notifier] Sent ${newDeliveries} new delivery(s).`);
+  }
+
+  if (limitedItems) {
+    const messagePrefix = args.suppressRemainingAfterLimit
+      ? args.dryRun
+        ? "Would suppress"
+        : "Suppressed"
+      : "Left pending";
+    console.log(
+      `[notifier] ${messagePrefix} ${limitedItems} additional item(s) after reaching the ${args.maxDeliveries}-item limit.`,
+    );
   }
 
   if (deliveryFailures.length) {
