@@ -80,8 +80,8 @@ public/          # Files served as-is (favicon, images)
 
 - Production deploys target [Cloudflare Pages](https://kyototechmeetup.com/) via Cloudflare's GitHub integration on merge to `main`.
 - Pull requests use GitHub Actions for CI checks and Cloudflare Pages for preview deployments.
-- GitHub can also trigger Cloudflare rebuilds via the deploy hook (`CLOUDFLARE_DEPLOY_HOOK`) every 3 hours by cron or by manual dispatch (`.github/workflows/scheduled-build.yml`).
-- Community feed notifications are handled separately by `.github/workflows/community-feed-notifier.yml`, which polls approved feeds every 15 minutes and tracks seen items in a gist-backed JSON state file.
+- GitHub can also trigger Cloudflare rebuilds via the deploy hook (`CLOUDFLARE_DEPLOY_HOOK`) by manual dispatch (`.github/workflows/scheduled-build.yml`).
+- Community feed notifications are handled separately by `.github/workflows/community-feed-notifier.yml`, which can be run manually and tracks seen items in a gist-backed JSON state file.
 - The legacy [GitHub Pages URL](https://kyoto-tech.github.io/) is maintained as a redirect only, published from `.github/redirect-site` by `.github/workflows/deploy-github-pages-redirect.yml`.
 - To test a production build locally, use `npm run build && npm run preview`.
 
@@ -90,7 +90,7 @@ public/          # Files served as-is (favicon, images)
 - The notifier reads approved sources from `src/data/member-feeds.json`.
 - State lives in the public gist `62b890d0f91f5832a831cc0503293bc1` as `community-feed-state.json`.
 - On the first non-dry run, the notifier seeds the current backlog into the gist without posting. Use the workflow dispatch input `allow_initial_posts` if you intentionally want to announce the backlog.
-- For a lightweight demo, use the workflow dispatch input `demo_mode`. It posts the 3 newest items and seeds the rest of the current backlog so later scheduled runs do not replay the full backlog.
+- For a lightweight demo, use the workflow dispatch input `demo_mode`. It posts the 3 newest items and seeds the rest of the current backlog so later runs do not replay the full backlog.
 - Use the workflow dispatch input `skip_state_write` if you want a repeatable demo run that posts but does not update the gist state.
 - Required secret: `GH_GIST_TOKEN` with the `gist` scope.
 - Optional secret: `DISCORD_WEBHOOK_URL` for direct Discord posting.
