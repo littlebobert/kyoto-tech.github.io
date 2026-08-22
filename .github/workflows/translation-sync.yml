@@ -32,4 +32,4 @@ jobs:
             "reasoning": {
               "enabled": true
             }
-          }
+          }'
