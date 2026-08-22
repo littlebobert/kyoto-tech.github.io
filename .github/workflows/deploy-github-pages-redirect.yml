@@ -2,12 +2,12 @@ name: Deploy GitHub Pages Redirect
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/redirect-site/**
-      - .github/workflows/deploy-github-pages-redirect.yml
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - .github/redirect-site/**
+  #     - .github/workflows/deploy-github-pages-redirect.yml
 
 permissions:
   contents: read
