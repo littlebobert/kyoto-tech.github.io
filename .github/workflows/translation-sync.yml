@@ -1,0 +1,33 @@
+# every time a PR is opened, add missing translations
+
+name: Build
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Scan
+        run: |
+          curl https://openrouter.ai/api/v1/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ env.OPENROUTER_API_KEY }}" \
+            -d '{
+            "model": "openai/gpt-oss-120b",
+            "messages": [
+              {
+                "role": "user",
+                "content": "How many r`s are in the word `strawberry?`"
+              }
+            ],
+            "reasoning": {
+              "enabled": true
+            }
+          }
