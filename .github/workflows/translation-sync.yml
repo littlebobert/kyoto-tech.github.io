@@ -1,6 +1,6 @@
 # every time a PR is opened, add missing translations
 
-name: Build
+name: Translation Sync
 
 on:
   pull_request:
