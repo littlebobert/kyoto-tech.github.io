@@ -14,11 +14,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       - name: Scan
         run: |
           curl https://openrouter.ai/api/v1/chat/completions \
             -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ env.OPENROUTER_API_KEY }}" \
+            -H "Authorization: Bearer "$OPENROUTER_API_KEY" \
             -d '{
             "model": "openai/gpt-oss-120b",
             "messages": [
