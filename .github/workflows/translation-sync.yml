@@ -20,7 +20,7 @@ jobs:
         run: |
           curl https://openrouter.ai/api/v1/chat/completions \
            	-H "Content-Type: application/json" \
-           	-H "Authorization: Bearer "$OPENROUTER_API_KEY" \
+           	-H "Authorization: Bearer $OPENROUTER_API_KEY \
            	-d '{
            	"model": "openai/gpt-oss-120b",
            	"messages": [
